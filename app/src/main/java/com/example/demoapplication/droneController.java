@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -56,6 +57,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -91,7 +93,7 @@ public class droneController extends AppCompatActivity {
     private boolean connectionFlag = false; // to check and maintain the connection status of the drone. Initially the drone is not conected, so the status is false
 
     Pattern statePattern = Pattern.compile("-*\\d{0,3}\\.?\\d{0,2}[^\\D\\W\\s]");  // a regex pattern to read the tello state
-    private int RC[] = {0,0,0,0};       // initialize an array of variables for remote control
+    private int RC[] = {0, 0, 0, 0};       // initialize an array of variables for remote control
     private Handler telloStateHandler;  // and handler needs to be created to display the tello state values in the UI in realtime
     long startMs;                       // variable to calculate the time difference for video codec
     private MediaCodec m_codec;         // MediaCodec is used to decode the incoming H.264 stream from tello drone
@@ -156,34 +158,38 @@ public class droneController extends AppCompatActivity {
         jResults = findViewById(R.id.DetectionResultView); // this is a custom view that will display the object detection results (bounding boxes) on top of video Feed
         DroneObjectDetection = findViewById(R.id.startDroneDetection);
 
+        EditText pilotText = (EditText) findViewById(R.id.txtPilot);
+        EditText commandText = (EditText) findViewById(R.id.txtCommand);
+        EditText sessionId = (EditText) findViewById(R.id.txtSessionId);
+
         DroneObjectDetection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (connectionFlag) {
-                    if (videoStreamFlag){
+                    if (videoStreamFlag) {
                         Toast.makeText(droneController.this, "Starting object detection", Toast.LENGTH_SHORT).show();
                         detectionFlag = true;
                     }
-                    } else {
-                        detectionFlag = false;
-                        Toast.makeText(droneController.this, "Stopping object detection", Toast.LENGTH_SHORT);
-                    }
+                } else {
+                    detectionFlag = false;
+                    Toast.makeText(droneController.this, "Stopping object detection", Toast.LENGTH_SHORT);
+                }
             }
 
         });
 
         connection = findViewById(R.id.connectToDrone); // a button to initiate establishing SDK mode with the drone by sending 'command' command
-        connection.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v){
-                if (connectionClickCounter % 2 == 1){   // to enable swith like behavior to connect and disconnect from the drone
+        connection.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (connectionClickCounter % 2 == 1) {   // to enable swith like behavior to connect and disconnect from the drone
                     telloConnect("command");
-                    Toast.makeText(droneController.this,"Drone connected",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(droneController.this, "Drone connected", Toast.LENGTH_SHORT).show();
                     connectionFlag = true;              // set the connection status to true
                 }
-                if (connectionClickCounter % 2 == 0){
+                if (connectionClickCounter % 2 == 0) {
                     telloConnect("disconnect");
                     connectionFlag = false;
-                    Toast.makeText(droneController.this,"Drone disconnected",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(droneController.this, "Drone disconnected", Toast.LENGTH_SHORT).show();
                 }
                 connectionClickCounter++;
             }
@@ -191,14 +197,16 @@ public class droneController extends AppCompatActivity {
 
         actionTakeOff = findViewById(R.id.takeoff);
         actionTakeOff.setOnClickListener(v -> {
-            if (connectionFlag){
+            if (connectionFlag) {
+                String timeStamp = new SimpleDateFormat("MMdd_HHmmss").format(new java.util.Date());
+                sessionId.setText(timeStamp);
                 telloConnect("takeoff"); // send takeoff command
             }
         });
 
         actionLnad = findViewById(R.id.land);
         actionLnad.setOnClickListener(v -> {
-            if (connectionFlag){
+            if (connectionFlag) {
                 telloConnect("land");   // send land command
             }
         });
@@ -206,44 +214,54 @@ public class droneController extends AppCompatActivity {
         JoystickView leftjoystick = (JoystickView) findViewById(R.id.joystickViewLeft); // left joystick where the angle is the movement angle and strength is the extend to which you push the joystick
         leftjoystick.setOnMoveListener((angle, strength) -> {
 
-            if (angle >45 && angle <=135){
-                RC[2]= strength;
+            if (angle > 45 && angle <= 135) {
+                //Clockwise
+                RC[2] = strength;
             }
-            if (angle >226 && angle <=315){
+            if (angle > 226 && angle <= 315) {
+                //Counter clockwise
                 strength *= -1;
-                RC[2]= strength;
+                RC[2] = strength;
             }
-            if (angle >135 && angle <=225){
+            if (angle > 135 && angle <= 225) {
+                //Down
                 strength *= -1;
-                RC[3]= strength;
+                RC[3] = strength;
             }
-            if (angle >316 && angle <=359 || angle >0 && angle <=45){
-                RC[3]= strength;
+            if (angle > 316 && angle <= 359 || angle > 0 && angle <= 45) {
+                //Up
+                RC[3] = strength;
             }
 
-            telloConnect("rc "+ RC[0] +" "+ RC[1] +" "+ RC[2] +" "+ RC[3]); // send the command eg,. 'rc 10 00 32 00'
+            String friendlyName = sessionId.getText().toString() + " " + commandText.getText().toString();
+            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3], friendlyName, pilotText.getText().toString()); // send the command eg,. 'rc 10 00 32 00'
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
 
         });
 
         JoystickView rightjoystick = (JoystickView) findViewById(R.id.joystickViewRight);
         rightjoystick.setOnMoveListener((angle, strength) -> {
-            if (angle >45 && angle <=135){
-                RC[1]= strength;
+            if (angle > 45 && angle <= 135) {
+                //Right
+                RC[1] = strength;
             }
-            if (angle >226 && angle <=315){
+            if (angle > 226 && angle <= 315) {
+                //Left
                 strength *= -1;
-                RC[1]= strength;
+                RC[1] = strength;
             }
-            if (angle >135 && angle <=225){
+            if (angle > 135 && angle <= 225) {
+                //Backward
                 strength *= -1;
-                RC[0]= strength;
+                RC[0] = strength;
             }
-            if (angle >316 && angle <=359 || angle >0 && angle <=45){
-                RC[0]= strength;
+            if (angle > 316 && angle <= 359 || angle > 0 && angle <= 45) {
+                //Forward
+                RC[0] = strength;
             }
 
-            telloConnect("rc "+ RC[0] +" "+ RC[1] +" "+ RC[2] +" "+ RC[3]);
+            String friendlyName = pilotText.getText().toString() + " " + sessionId.getText().toString();
+            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3], commandText.getText().toString(), friendlyName);
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
         });
 
@@ -275,23 +293,36 @@ public class droneController extends AppCompatActivity {
 
     }  // end of oncreate
 
-    public void telloConnect(final String strCommand){
+    public void telloConnect(final String strCommand) {
+        telloConnect(strCommand, "", "");
+    }
+
+    public void telloConnect(final String strCommand, String friendlyCommandName) {
+        telloConnect(strCommand, friendlyCommandName, "");
+    }
+
+    public void telloConnect(final String strCommand, String friendlyCommandName, String operator) {
         new Thread(new Runnable() { // create a new runnable thread to handle tello state
             public void run() {
                 Boolean run = true; // always keep running once initiated
                 try {
-                    if (strCommand == "disconnect"){
+                    if (strCommand == "disconnect") {
                         run = false;
                     }
+
+                    new LogFile(getApplicationContext(), operator).appendLog(strCommand, friendlyCommandName);
+
+                    Log.d("Command", strCommand);
+
                     DatagramSocket udpSocket = new DatagramSocket(null); // create a datagram socket with null attribute so that a dynamic port address can be chosen later on
 
                     InetAddress serverAddr = InetAddress.getByName("192.168.10.1");     // set the tello IP address (refer Tello SDK 1.3)
                     byte[] buf = (strCommand).getBytes("UTF-8");             // command needs to be in UTF-8
-                    DatagramPacket packet = new DatagramPacket(buf, buf.length,serverAddr, 8889); // crate new datagram packet
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAddr, 8889); // crate new datagram packet
                     udpSocket.send(packet);     // send packets to port 8889
-                    while (run){
+                    while (run) {
                         byte[] message = new byte[1518];        // create a new byte message (you can change the size)
-                        DatagramPacket rpacket = new DatagramPacket(message,message.length);
+                        DatagramPacket rpacket = new DatagramPacket(message, message.length);
                         Log.i("UDP client: ", "about to wait to receive");
                         udpSocket.setSoTimeout(2000);           // set a timeout to close the connection
                         udpSocket.receive(rpacket);             // receive the response packet from tello
@@ -300,12 +331,12 @@ public class droneController extends AppCompatActivity {
                         new Thread(new Runnable() {             // create a new thread to stream tello state
                             @Override
                             public void run() {
-                                while (!interrupted()){
+                                while (!interrupted()) {
                                     sleep(2000);            // I chose 2 seconds as the delay
                                     byte[] buf = new byte[0];
                                     try {
                                         buf = ("battery?").getBytes("UTF-8");
-                                        DatagramPacket packet = new DatagramPacket(buf, buf.length,serverAddr, 8889);
+                                        DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAddr, 8889);
                                         udpSocket.send(packet);
 
                                         DatagramSocket socket = new DatagramSocket(null);   // create a new datagram socket
@@ -314,7 +345,7 @@ public class droneController extends AppCompatActivity {
                                         socket.bind(new InetSocketAddress(8890));              // bind to tello state port (refer to SDK 1.3)
 
                                         byte[] message = new byte[1518];
-                                        DatagramPacket rpacket = new DatagramPacket(message,message.length); //, serverAddr, 8890
+                                        DatagramPacket rpacket = new DatagramPacket(message, message.length); //, serverAddr, 8890
                                         socket.receive(rpacket);
                                         String text = new String(message, 0, rpacket.getLength());
                                         Matcher DCML = statePattern.matcher(text);                  // use the regex pattern initiated at the beginning of the code to parse the response from tell drone
@@ -323,35 +354,34 @@ public class droneController extends AppCompatActivity {
                                             dec.add(DCML.group());
                                         }
 
-                                        Log.d("Battery Charge : ",text+"%");
+                                        Log.d("Battery Charge : ", text + "%");
                                         telloStateHandler.post(new Runnable() {                     // use the initiated handler to post the tello state output the drone controller UI
                                             @Override
                                             public void run() {
-                                                try{
-                                                    jdroneBattery.setText("Battery: "+ dec.get(10)+"%");
-                                                    if (Integer.parseInt(dec.get(10)) <= 15){
+                                                try {
+                                                    jdroneBattery.setText("Battery: " + dec.get(10) + "%");
+                                                    if (Integer.parseInt(dec.get(10)) <= 15) {
                                                         jdroneBattery.setBackgroundResource(R.drawable.rounded_corner_red); // if battery percentage is below 15 set the background of text to red
-                                                    }
-                                                    else {
+                                                    } else {
                                                         jdroneBattery.setBackgroundResource(R.drawable.rounded_corner_green); // else display batter percentage with green background
                                                     }
-                                                    if (Integer.parseInt(dec.get(10)) != 0){
+                                                    if (Integer.parseInt(dec.get(10)) != 0) {
                                                         jdroneWIFI.setBackgroundResource(R.drawable.rounded_corner_green);     // if wifi is connected and is active then display with green background
                                                         jdroneWIFI.setText("WIFI: connected");
                                                     }
-                                                    jdroneTOF.setText("TOF: "+dec.get(8)+"cm");
-                                                    jdroneBaro.setText("Baro: "+dec.get(11)+"m");
-                                                    jdroneHeight.setText("Height: "+dec.get(9));
-                                                    jdroneTemperature.setText("Temperature: "+dec.get(7)+"C");
-                                                    jdroneSpeed.setText("Speed :"+ Integer.parseInt(dec.get(3)) + Integer.parseInt(dec.get(4)) + Integer.parseInt(dec.get(5))+"cm/s");
-                                                    jdroneAccleration.setText("Acceleration: "+Math.round(Math.sqrt(Math.pow(Double.parseDouble(dec.get(13)),2)+Math.pow(Double.parseDouble(dec.get(14)),2)+Math.pow(Double.parseDouble(dec.get(15)),2)))+"g");
+                                                    jdroneTOF.setText("TOF: " + dec.get(8) + "cm");
+                                                    jdroneBaro.setText("Baro: " + dec.get(11) + "m");
+                                                    jdroneHeight.setText("Height: " + dec.get(9));
+                                                    jdroneTemperature.setText("Temperature: " + dec.get(7) + "C");
+                                                    jdroneSpeed.setText("Speed :" + Integer.parseInt(dec.get(3)) + Integer.parseInt(dec.get(4)) + Integer.parseInt(dec.get(5)) + "cm/s");
+                                                    jdroneAccleration.setText("Acceleration: " + Math.round(Math.sqrt(Math.pow(Double.parseDouble(dec.get(13)), 2) + Math.pow(Double.parseDouble(dec.get(14)), 2) + Math.pow(Double.parseDouble(dec.get(15)), 2))) + "g");
                                                     // https://physics.stackexchange.com/questions/41653/how-do-i-get-the-total-acceleration-from-3-axes
                                                     // for calculating acceleration I referred to the above link
 
                                                     telloStateHandler.removeCallbacks(this);
 
-                                                }catch (Exception e){
-                                                    Log.e("Array out of bounds", "error",e);
+                                                } catch (Exception e) {
+                                                    Log.e("Array out of bounds", "error", e);
                                                 }
                                             }
                                         });
@@ -370,9 +400,8 @@ public class droneController extends AppCompatActivity {
 
                 } catch (SocketException | UnknownHostException e) {
                     Log.e("Socket Open:", "Error:", e);
-                }
-                catch (IOException e){
-                    Log.e("IOException","error",e);
+                } catch (IOException e) {
+                    Log.e("IOException", "error", e);
                 }
 
             }
@@ -383,8 +412,8 @@ public class droneController extends AppCompatActivity {
         telloConnect(strCommand);
 
         BlockingQueue queue = frameV; // create a BlockingQueue since this function creates a thread and outputs a video frame which has to be displayed on the UI thread
-                                      // populating a queue and withdrawing from the queue outside the thread seem to be the best way to get the individual frames.
-        if (strCommand == "streamon"){
+        // populating a queue and withdrawing from the queue outside the thread seem to be the best way to get the individual frames.
+        if (strCommand == "streamon") {
             new Thread(new Runnable() {
                 Boolean streamon = true;    // keeps track if the video stream is on or off
 
@@ -399,13 +428,13 @@ public class droneController extends AppCompatActivity {
                     format.setByteBuffer("csd-1", ByteBuffer.wrap(header_pps)); // pass the PPS keys
                     format.setInteger(MediaFormat.KEY_WIDTH, 960);              // by default the tello outputs 960 x 720 video
                     format.setInteger(MediaFormat.KEY_HEIGHT, 720);
-                    format.setInteger(MediaFormat.KEY_CAPTURE_RATE,30);         // 25-30 fps is good. Feel free to experiment
+                    format.setInteger(MediaFormat.KEY_CAPTURE_RATE, 30);         // 25-30 fps is good. Feel free to experiment
                     format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible); // the output is a YUV420 format which need to be converted later
                     format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 960 * 720);
 
                     try {
                         m_codec = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);  // initialize the decoder with AVC format.
-                        m_codec.configure(format, null ,null,0); // pass the format configuration to media codec with surface 'null' if you are processing the video for tasks like object detection, if not set to true
+                        m_codec.configure(format, null, null, 0); // pass the format configuration to media codec with surface 'null' if you are processing the video for tasks like object detection, if not set to true
                         startMs = System.currentTimeMillis();   //calculate time to pass to the codec
                         m_codec.start();
 
@@ -435,7 +464,7 @@ public class droneController extends AppCompatActivity {
                             int len = videoPacket.getLength();
                             output.write(pacMan);
                             if (len < 1460) {                               // generally, each frame of video from tello is 1460 bytes in size, with the ending frame that is usually less than <1460 bytes which indicate end of a sequence
-                                destPos=0;
+                                destPos = 0;
                                 byte[] data = output.toByteArray();         // one the stream reaches the end of sequence, the entire byte array containing one complete frame is passed to data and the output variable is reset to receive newer frames
                                 output.reset();                             // reset to receive newer frame
                                 output.flush();
@@ -443,7 +472,7 @@ public class droneController extends AppCompatActivity {
                                 int inputIndex = m_codec.dequeueInputBuffer(-1); // dosen't matter of its -1 of 10000
                                 if (inputIndex >= 0) {
                                     ByteBuffer buffer = m_codec.getInputBuffer(inputIndex);
-                                    if (buffer != null){
+                                    if (buffer != null) {
                                         buffer.clear(); // exp
                                         buffer.put(data); //  Caused by: java.lang.NullPointerException: Attempt to get length of null array // if nothing else pass: data
                                         // if you change buffer.put also change queueInputBuffer 3rd prameter (lenth of passed byffer array)
@@ -455,18 +484,16 @@ public class droneController extends AppCompatActivity {
                                 MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
                                 int outputIndex = m_codec.dequeueOutputBuffer(info, 100); // set it back to 0 if there is error associate with this change in value
 
-                                if (outputIndex >= 0){
+                                if (outputIndex >= 0) {
 
-                                    if (!detectionFlag){
+                                    if (!detectionFlag) {
                                         m_codec.releaseOutputBuffer(outputIndex, false); // true if the surfaceView is available
-                                    }
-
-                                    else if (detectionFlag){
+                                    } else if (detectionFlag) {
                                         try {
                                             Image image = m_codec.getOutputImage(outputIndex); // store the decoded (decoded by Mediacodec) data to Image format
                                             Bitmap BM = imgToBM(image);                        // convert from image format to BitMap format
                                             try {
-                                                if (!queue.isEmpty()){
+                                                if (!queue.isEmpty()) {
                                                     queue.clear();
                                                 }
                                                 queue.put(BM);                                 // pass the data to the queue created earlier
@@ -490,15 +517,15 @@ public class droneController extends AppCompatActivity {
             }).start();
 
         }
-        if (strCommand == "streamoff"){
-            Log.d("Codec State","stopped and released called...");
+        if (strCommand == "streamoff") {
+            Log.d("Codec State", "stopped and released called...");
             m_codec.stop();         // stop and release the codec
             m_codec.release();
         }
 
     }
 
-    private Bitmap imgToBM(Image image){        // convert from Image to Bitmap format for neural network processing.
+    private Bitmap imgToBM(Image image) {        // convert from Image to Bitmap format for neural network processing.
         Image.Plane[] p = image.getPlanes();
         ByteBuffer y = p[0].getBuffer();
         ByteBuffer u = p[1].getBuffer();
@@ -515,28 +542,28 @@ public class droneController extends AppCompatActivity {
 
         YuvImage yuvImage = new YuvImage(jm8, ImageFormat.NV21, image.getWidth(), image.getHeight(), null);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        yuvImage.compressToJpeg(new Rect(0,0, yuvImage.getWidth(), yuvImage.getHeight()), 75, out);
+        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 75, out);
         byte[] imgBytes = out.toByteArray();
-        return BitmapFactory.decodeByteArray(imgBytes, 0 , imgBytes.length);
+        return BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
     }
 
-    public class displayBitmap implements Runnable{
+    public class displayBitmap implements Runnable {
 
         protected BlockingQueue displayQueue;       // create a blocking queue to get the data from queue
         protected Bitmap displayBitmap_;             // create a bitmap variable for displaying bitmap
 
-        public displayBitmap(BlockingQueue displayQueue_){
+        public displayBitmap(BlockingQueue displayQueue_) {
             this.displayQueue = displayQueue_;
         }
 
         @Override
-        public void run(){
+        public void run() {
 
-            while (true){
+            while (true) {
                 try {
                     displayBitmap_ = (Bitmap) displayQueue.take();           // take data (video frame) from blocking queue
                     displayQueue.clear();                                   // clear the queue after taking
-                    if (displayQueue != null){
+                    if (displayQueue != null) {
                         runOnUiThread(() -> {                               // needs to be on UI thread
                             bitImageView.setImageBitmap(displayBitmap_);     // set the bitmap to current frame in the queue
                             bitImageView.invalidate();
@@ -549,20 +576,20 @@ public class droneController extends AppCompatActivity {
         }
     }   // end of displayBitmap
 
-    public class objectDetectionThread implements Runnable{
+    public class objectDetectionThread implements Runnable {
 
         private Bitmap threadBM;                            // create a bitmap variable
         private volatile ArrayList results;                 // create an array list to store the object detection result
         protected BlockingQueue threadFrame = null;         // blocking queue variable to take the data from blocking queue
 
-        public  objectDetectionThread(BlockingQueue consumerQueue){
+        public objectDetectionThread(BlockingQueue consumerQueue) {
             this.threadFrame = consumerQueue;               // retrieve element from queue
         }
 
         @WorkerThread
         @Nullable
-        public void run(){
-            while (true){
+        public void run() {
+            while (true) {
                 try {
                     threadBM = (Bitmap) threadFrame.take();
                     threadFrame.clear();                    // clear queue after getting the frame
@@ -573,24 +600,26 @@ public class droneController extends AppCompatActivity {
                 }
             }
         }
-        public ArrayList getValue(){
+
+        public ArrayList getValue() {
             return results;
         }
     }   // end of objectDetectionThread function
 
-    static class ResA{
+    static class ResA {
         private final ArrayList<Result> jResults;
-        public ResA(ArrayList<Result> results){
+
+        public ResA(ArrayList<Result> results) {
             jResults = results;
         }
     }
 
     @WorkerThread
     @Nullable
-    protected droneController.ResA analyseImage(Bitmap BMtest){
+    protected droneController.ResA analyseImage(Bitmap BMtest) {
         try {
-            if (jMod == null){
-                jMod = LiteModuleLoader.load(droneController.assetFilePath(getApplicationContext(),"yolov5s.torchscript.ptl"));        // load pre-trained pytorch module from the assets folder
+            if (jMod == null) {
+                jMod = LiteModuleLoader.load(droneController.assetFilePath(getApplicationContext(), "yolov5s.torchscript.ptl"));        // load pre-trained pytorch module from the assets folder
                 BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));                       // similarly load the classes.txt from assets
                 String line;
                 List<String> classes = new ArrayList<>();
@@ -600,14 +629,14 @@ public class droneController extends AppCompatActivity {
                 ImageProcessing.jClasses = new String[classes.size()];
                 classes.toArray(ImageProcessing.jClasses);
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             Log.e("Object detection: ", "Unable to load model...");
             return null;
         }
 
         Matrix M = new Matrix();
 //        M.postRotate(90.0f);
-        BMtest = Bitmap.createBitmap(BMtest, 0,0, BMtest.getWidth(), BMtest.getHeight(), M, true);
+        BMtest = Bitmap.createBitmap(BMtest, 0, 0, BMtest.getWidth(), BMtest.getHeight(), M, true);
         Bitmap resizedBM = Bitmap.createScaledBitmap(BMtest, ImageProcessing.jInputW, ImageProcessing.jInputH, true); // crate a bitmap of 640x640 dimension
 
         // DL model inference starts here
@@ -616,21 +645,21 @@ public class droneController extends AppCompatActivity {
         final Tensor oTensor = oTuple[0].toTensor();
         final float[] O = oTensor.getDataAsFloatArray();
 
-        float imSX = (float)BMtest.getWidth() / ImageProcessing.jInputW;
-        float imSY = (float)BMtest.getHeight() / ImageProcessing.jInputH;
-        float ivSX = (float)jResults.getWidth() /BMtest.getWidth();
-        float ivSY = (float)jResults.getHeight() /BMtest.getHeight();
+        float imSX = (float) BMtest.getWidth() / ImageProcessing.jInputW;
+        float imSY = (float) BMtest.getHeight() / ImageProcessing.jInputH;
+        float ivSX = (float) jResults.getWidth() / BMtest.getWidth();
+        float ivSY = (float) jResults.getHeight() / BMtest.getHeight();
 
         final ArrayList<Result> results = ImageProcessing.outputsNMSFilter(O, rtThreshold, imSX, imSY, ivSX, ivSY, 0, 0);
-        int listSize =results.size();
-        if (results != null){
+        int listSize = results.size();
+        if (results != null) {
             runOnUiThread(() -> {
-                droneObjectCount.setText(listSize+"");
+                droneObjectCount.setText(listSize + "");
                 jResults.setResults(results);
                 jResults.invalidate();
             });
         }
-        return  new droneController.ResA(results);
+        return new droneController.ResA(results);
 
     }
 }
