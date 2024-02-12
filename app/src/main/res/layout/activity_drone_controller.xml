@@ -7,15 +7,16 @@
     android:background="@color/white"
     tools:context=".droneController">
 
+    <!--    remove below code if not needed later-->
     <ImageView
+        android:id="@+id/bitView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/bitView"
-        android:scaleType="fitXY"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:scaleType="fitXY"
+        android:visibility="invisible" />
 
-    <!--    remove below code if not needed later-->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -30,6 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout="@layout/texture_view"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -44,6 +46,7 @@
         android:textColor="#80ffcc00"
         android:textSize="100sp"
         android:textStyle="bold"
+        android:visibility="invisible"
         tools:layout_editor_absoluteX="-3dp"
         tools:layout_editor_absoluteY="0dp" />
 
@@ -73,9 +76,10 @@
         android:backgroundTint="#ffcc00"
         android:elevation="10dp"
         android:gravity="center"
+        android:visibility="invisible"
         app:backgroundTint="#ffcc00"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:fabCustomSize="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/joystickViewRight"
         app:layout_constraintHorizontal_bias="0.489"
         app:layout_constraintStart_toEndOf="@+id/joystickViewLeft"
@@ -90,6 +94,7 @@
         android:backgroundTint="#ffcc00"
         android:elevation="10dp"
         android:gravity="center"
+        android:visibility="invisible"
         app:backgroundTint="#ffcc00"
         app:fabCustomSize="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -107,8 +112,9 @@
         android:backgroundTint="#ffcc00"
         android:elevation="10dp"
         android:gravity="center"
-        app:fabCustomSize="50dp"
+        android:visibility="invisible"
         app:backgroundTint="#ffcc00"
+        app:fabCustomSize="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/captureImage"
         app:layout_constraintTop_toTopOf="parent"
@@ -388,6 +394,7 @@
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
         android:text="Video "
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/connectToDrone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -402,5 +409,47 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         />
+
+    <EditText
+        android:id="@+id/txtPilot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="99dp"
+        android:ems="10"
+        android:hint="Pilot Name..."
+        android:inputType="text"
+        android:text="Test Pilot"
+        app:layout_constraintBottom_toTopOf="@+id/txtCommand"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/objectCountDrone"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <EditText
+        android:id="@+id/txtCommand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="208dp"
+        android:ems="10"
+        android:hint="Command..."
+        android:inputType="text"
+        android:text="Command"
+        app:layout_constraintBottom_toBottomOf="@+id/objectCountDrone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <EditText
+        android:id="@+id/txtSessionId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="88dp"
+        android:alpha="0.5"
+        android:ems="10"
+        android:hint="Session Id..."
+        android:textIsSelectable="true"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
