@@ -12,12 +12,13 @@ public class LogFile {
     String name;
     Context context;
 
-    public LogFile(Context context, String name) {
+    public LogFile(Context context, String logFileName) {
         this.context = context;
-        this.name = "log_" + name.replace(" ", "_") + ".txt";
+        this.name = "log_" + logFileName + ".txt";
+        this.name = this.name.replace(" ", "_");
     }
 
-    public void appendLog(String text, String friendlyCommandName) {
+    public void appendLog(String text) {
         File logFile = new File(context.getExternalFilesDir(null), name);
 
         if (!logFile.exists()) {
@@ -33,7 +34,7 @@ public class LogFile {
 
             //BufferedWriter for performance, true to set append to file flag
             BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
-            buf.append(timeStamp + ": " + text);
+            buf.append(timeStamp + "," + text.replace(' ',','));
             buf.newLine();
             buf.close();
         } catch (IOException e) {

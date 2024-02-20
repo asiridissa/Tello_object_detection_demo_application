@@ -104,6 +104,8 @@ public class droneController extends AppCompatActivity {
     private Module jMod = null;
     private DetectionResult jResults;
     private float rtThreshold = 0.30f;
+
+    public String logFileName = "";
     //
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
@@ -200,6 +202,7 @@ public class droneController extends AppCompatActivity {
             if (connectionFlag) {
                 String timeStamp = new SimpleDateFormat("MMdd_HHmmss").format(new java.util.Date());
                 sessionId.setText(timeStamp);
+                logFileName = pilotText.getText().toString() + " " + commandText.getText().toString() + " " + timeStamp;
                 telloConnect("takeoff"); // send takeoff command
             }
         });
@@ -233,8 +236,7 @@ public class droneController extends AppCompatActivity {
                 RC[3] = strength;
             }
 
-            String friendlyName = sessionId.getText().toString() + " " + commandText.getText().toString();
-            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3], friendlyName, pilotText.getText().toString()); // send the command eg,. 'rc 10 00 32 00'
+            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3]); // send the command eg,. 'rc 10 00 32 00'
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
 
         });
@@ -260,8 +262,7 @@ public class droneController extends AppCompatActivity {
                 RC[0] = strength;
             }
 
-            String friendlyName = pilotText.getText().toString() + " " + sessionId.getText().toString();
-            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3], commandText.getText().toString(), friendlyName);
+            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3]);
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
         });
 
@@ -294,14 +295,6 @@ public class droneController extends AppCompatActivity {
     }  // end of oncreate
 
     public void telloConnect(final String strCommand) {
-        telloConnect(strCommand, "", "");
-    }
-
-    public void telloConnect(final String strCommand, String friendlyCommandName) {
-        telloConnect(strCommand, friendlyCommandName, "");
-    }
-
-    public void telloConnect(final String strCommand, String friendlyCommandName, String operator) {
         new Thread(new Runnable() { // create a new runnable thread to handle tello state
             public void run() {
                 Boolean run = true; // always keep running once initiated
@@ -310,7 +303,7 @@ public class droneController extends AppCompatActivity {
                         run = false;
                     }
 
-                    new LogFile(getApplicationContext(), operator).appendLog(strCommand, friendlyCommandName);
+                    new LogFile(getApplicationContext(), logFileName).appendLog(strCommand);
 
                     Log.d("Command", strCommand);
 

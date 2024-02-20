@@ -450,6 +450,7 @@
         android:textIsSelectable="true"
         android:textSize="10sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="0000" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
