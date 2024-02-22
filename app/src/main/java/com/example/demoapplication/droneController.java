@@ -88,6 +88,7 @@ public class droneController extends AppCompatActivity {
     private ImageView actionTakeOff; // button to get the drone to takeoff
     private ImageView actionLnad;    // button to get the drone to land
     private ImageView bitImageView; // this is the imageview to which the drone video feed will be displayed
+    private ImageView btnRefreshSession; // this is the imageview to refresh the Session Id
 
     private int connectionClickCounter = 1; // for counting the number of times the button is clicked
     private boolean connectionFlag = false; // to check and maintain the connection status of the drone. Initially the drone is not conected, so the status is false
@@ -197,12 +198,17 @@ public class droneController extends AppCompatActivity {
             }
         });
 
+        btnRefreshSession = findViewById(R.id.btnRefreshSession);
+        btnRefreshSession.setOnClickListener(x -> {
+            String timeStamp = new SimpleDateFormat("MMdd_HHmmss").format(new java.util.Date());
+            sessionId.setText(timeStamp);
+            logFileName = pilotText.getText().toString() + " " + commandText.getText().toString() + " " + timeStamp;
+            Toast.makeText(droneController.this, "New session started. Log File: " + logFileName + ".txt",Toast.LENGTH_LONG).show();
+        });
+
         actionTakeOff = findViewById(R.id.takeoff);
         actionTakeOff.setOnClickListener(v -> {
             if (connectionFlag) {
-                String timeStamp = new SimpleDateFormat("MMdd_HHmmss").format(new java.util.Date());
-                sessionId.setText(timeStamp);
-                logFileName = pilotText.getText().toString() + " " + commandText.getText().toString() + " " + timeStamp;
                 telloConnect("takeoff"); // send takeoff command
             }
         });

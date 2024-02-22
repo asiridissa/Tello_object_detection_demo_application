@@ -407,8 +407,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnRefreshSession"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="48dp"
+        android:background="@drawable/round_back"
+        android:backgroundTint="#ffcc00"
+        android:elevation="10dp"
+        android:gravity="center"
+        app:backgroundTint="#ffcc00"
+        app:fabCustomSize="50dp"
+        app:layout_constraintStart_toEndOf="@+id/txtSessionId"
         app:layout_constraintTop_toTopOf="parent"
-        />
+        app:srcCompat="@android:drawable/ic_popup_sync" />
 
     <EditText
         android:id="@+id/txtPilot"
@@ -442,14 +457,13 @@
         android:id="@+id/txtSessionId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:layout_marginEnd="88dp"
+        android:layout_marginTop="52dp"
         android:alpha="0.5"
         android:ems="10"
         android:hint="Session Id..."
         android:textIsSelectable="true"
         android:textSize="10sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/txtPilot"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="0000" />
 
