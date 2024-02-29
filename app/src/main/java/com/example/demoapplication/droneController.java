@@ -222,53 +222,56 @@ public class droneController extends AppCompatActivity {
 
         JoystickView leftjoystick = (JoystickView) findViewById(R.id.joystickViewLeft); // left joystick where the angle is the movement angle and strength is the extend to which you push the joystick
         leftjoystick.setOnMoveListener((angle, strength) -> {
+            String action = "";
 
             if (angle > 45 && angle <= 135) {
-                //Clockwise
+                action = "Clockwise";
                 RC[2] = strength;
             }
             if (angle > 226 && angle <= 315) {
-                //Counter clockwise
+                action = "Counter clockwise";
                 strength *= -1;
                 RC[2] = strength;
             }
             if (angle > 135 && angle <= 225) {
-                //Down
+                action = "Down";
                 strength *= -1;
                 RC[3] = strength;
             }
             if (angle > 316 && angle <= 359 || angle > 0 && angle <= 45) {
-                //Up
+                action = "Up";
                 RC[3] = strength;
             }
 
-            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3]); // send the command eg,. 'rc 10 00 32 00'
+            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3], action); // send the command eg,. 'rc 10 00 32 00'
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
 
         },10);
 
         JoystickView rightjoystick = (JoystickView) findViewById(R.id.joystickViewRight);
         rightjoystick.setOnMoveListener((angle, strength) -> {
+            String action = "";
+
             if (angle > 45 && angle <= 135) {
-                //Right
+                action = "Right";
                 RC[1] = strength;
             }
             if (angle > 226 && angle <= 315) {
-                //Left
+                action = "Left";
                 strength *= -1;
                 RC[1] = strength;
             }
             if (angle > 135 && angle <= 225) {
-                //Backward
+                action = "Backward";
                 strength *= -1;
                 RC[0] = strength;
             }
             if (angle > 316 && angle <= 359 || angle > 0 && angle <= 45) {
-                //Forward
+                action = "Forward";
                 RC[0] = strength;
             }
 
-            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3]);
+            telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3], action);
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
         },10);
 
@@ -301,6 +304,10 @@ public class droneController extends AppCompatActivity {
     }  // end of oncreate
 
     public void telloConnect(final String strCommand) {
+        telloConnect(strCommand, "");
+    }
+
+    public void telloConnect(final String strCommand, String action) {
         new Thread(new Runnable() { // create a new runnable thread to handle tello state
             public void run() {
                 Boolean run = true; // always keep running once initiated
@@ -309,7 +316,7 @@ public class droneController extends AppCompatActivity {
                         run = false;
                     }
 
-                    new LogFile(getApplicationContext(), logFileName).appendLog(strCommand);
+                    new LogFile(getApplicationContext(), logFileName).appendLog(strCommand, action);
 
                     Log.d("Command", strCommand);
 

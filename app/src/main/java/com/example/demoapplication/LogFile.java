@@ -18,7 +18,11 @@ public class LogFile {
         this.name = this.name.replace(" ", "_");
     }
 
-    public void appendLog(String text) {
+    public void appendLog(String text){
+        appendLog(text, "");
+    }
+
+    public void appendLog(String text, String action) {
         File logFile = new File(context.getExternalFilesDir(null), name);
 
         if (!logFile.exists()) {
@@ -31,10 +35,9 @@ public class LogFile {
         }
         try {
             String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(new java.util.Date());
-
             //BufferedWriter for performance, true to set append to file flag
             BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
-            buf.append(timeStamp + "," + text.replace(' ',','));
+            buf.append(timeStamp + "," + (action == null ? "" : action) + "," + text.replace(' ',','));
             buf.newLine();
             buf.close();
         } catch (IOException e) {
