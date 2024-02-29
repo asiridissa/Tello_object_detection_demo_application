@@ -245,7 +245,7 @@ public class droneController extends AppCompatActivity {
             telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3]); // send the command eg,. 'rc 10 00 32 00'
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
 
-        });
+        },10);
 
         JoystickView rightjoystick = (JoystickView) findViewById(R.id.joystickViewRight);
         rightjoystick.setOnMoveListener((angle, strength) -> {
@@ -270,7 +270,7 @@ public class droneController extends AppCompatActivity {
 
             telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3]);
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
-        });
+        },10);
 
         videoFeedaction = findViewById(R.id.videoFeed);
         videoFeedaction.setOnClickListener(view -> {
