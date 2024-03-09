@@ -225,55 +225,56 @@ public class droneController extends AppCompatActivity {
             String action = "";
 
             if (angle > 45 && angle <= 135) {
-                action = "Clockwise";
+                action = "UP";
                 RC[2] = strength;
             }
             if (angle > 226 && angle <= 315) {
-                action = "Counter clockwise";
+                action = "Down";
                 strength *= -1;
                 RC[2] = strength;
             }
             if (angle > 135 && angle <= 225) {
-                action = "Down";
+                action = "Counter clockwise";
                 strength *= -1;
                 RC[3] = strength;
             }
             if (angle > 316 && angle <= 359 || angle > 0 && angle <= 45) {
-                action = "Up";
+                action = "Clockwise";
                 RC[3] = strength;
             }
 
             telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3], action); // send the command eg,. 'rc 10 00 32 00'
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
-
-        },10);
+            Log.v("Action",action);
+        },100);
 
         JoystickView rightjoystick = (JoystickView) findViewById(R.id.joystickViewRight);
         rightjoystick.setOnMoveListener((angle, strength) -> {
             String action = "";
 
             if (angle > 45 && angle <= 135) {
-                action = "Right";
+                action = "Forward";
                 RC[1] = strength;
             }
             if (angle > 226 && angle <= 315) {
-                action = "Left";
+                action = "Backward";
                 strength *= -1;
                 RC[1] = strength;
             }
             if (angle > 135 && angle <= 225) {
-                action = "Backward";
+                action = "Left";
                 strength *= -1;
                 RC[0] = strength;
             }
             if (angle > 316 && angle <= 359 || angle > 0 && angle <= 45) {
-                action = "Forward";
+                action = "Right";
                 RC[0] = strength;
             }
 
             telloConnect("rc " + RC[0] + " " + RC[1] + " " + RC[2] + " " + RC[3], action);
             Arrays.fill(RC, 0); // reset the array with 0 after every virtual joystick move
-        },10);
+            Log.v("Action",action);
+        },100);
 
         videoFeedaction = findViewById(R.id.videoFeed);
         videoFeedaction.setOnClickListener(view -> {
